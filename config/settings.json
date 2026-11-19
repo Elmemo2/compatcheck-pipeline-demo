@@ -1,0 +1,5 @@
+{
+  "app_name": "CompatiCheck",
+  "log_path": "C:\\logs\\compatcheck",
+  "report_format": "json"
+}

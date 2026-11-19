@@ -1,0 +1,45 @@
+name: CompatiCheck CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compat-check:
+    name: compat-check (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ejecutar checks de compatibilidad
+        shell: bash
+        run: python scripts/compatcheck.py --report "reports/report-${{ matrix.os }}.json"
+
+      - name: Publicar resumen
+        if: always()
+        shell: bash
+        run: cat reports/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Subir reportes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compatcheck-report-${{ matrix.os }}
+          path: reports/
+          if-no-files-found: warn
